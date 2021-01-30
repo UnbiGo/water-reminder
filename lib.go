@@ -2,17 +2,18 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/deckarep/gosx-notifier"
-	"github.com/gen2brain/beeep"
 	"github.com/getlantern/systray"
 	"github.com/tcnksm/go-latest"
 )
@@ -74,6 +75,24 @@ func writeDelay(file, delay string) {
 	config.WriteString(delay)
 }
 
+func write(file string, delay string) {
+	config, _ := os.Create(file)
+	defer config.Close()
+	config.WriteString(delay)
+}
+
+func readText(configFilePath string) string {
+	file, err := os.Open(configFilePath)
+	if err != nil {
+		return ""
+	}
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	delay := scanner.Text()
+	//Convert the string read from config to int
+	return string(delay)
+}
+
 func readDelay(configFilePath string) int {
 	file, err := os.Open(configFilePath)
 	if err != nil {
@@ -106,12 +125,16 @@ func notify(config, icon, os string) {
 }
 
 func sendNotif(title, message, icon string) {
+	if !isInTimeRange(MINTIME, MAXTIME) {
+		fmt.Println("Time not in range")
+		return
+	}
 	if runtime.GOOS == "linux" {
-		if icon != "" {
-			beeep.Alert(title, message, icon)
-		} else {
-			exec.Command("notify-send", title, message).Run()
-		}
+		//io.elementary.onboarding
+		notidata := NotiData{Title: title, Msg: message, Time: 0, Icon: "io.elementary.onboarding"}
+		jsonValue, _ := json.Marshal(notidata)
+		_, _ = http.Post(ADDR, "application/text", bytes.NewBuffer(jsonValue))
+
 	} else {
 		note := gosxnotifier.NewNotification(message)
 		note.Title = title
@@ -158,4 +181,51 @@ func tray(icon []byte, iconString, configFilePath string) {
 	}
 
 	systray.Run(onReady, onExit)
+}
+
+//////////////////////////
+type NotiData struct {
+	Title string `json:"title"`
+	Msg   string `json:"msg"`
+	Icon  string `json:"icon"`
+	Time  int    `json:"time"`
+}
+
+func stringToTime(str string) time.Time {
+	tm, err := time.Parse(time.Kitchen, str)
+	if err != nil {
+		fmt.Println("Failed to decode time:", err)
+	}
+	fmt.Println("Time decoded:", tm)
+	return tm
+}
+
+func isInTimeRange(startTimeString, endTimeString string) bool {
+	t := time.Now()
+
+	zone, offset := t.Zone()
+
+	fmt.Println(t.Format(time.Kitchen), "Zone:", zone, "Offset UTC:", offset)
+
+	timeNowString := t.Format(time.Kitchen)
+
+	fmt.Println("String Time Now: ", timeNowString)
+
+	timeNow := stringToTime(timeNowString)
+
+	start := stringToTime(startTimeString)
+
+	end := stringToTime(endTimeString)
+
+	fmt.Println("Local Time Now: ", timeNow)
+
+	if timeNow.Before(start) {
+		return false
+	}
+
+	if timeNow.Before(end) {
+		return true
+	}
+
+	return false
 }
