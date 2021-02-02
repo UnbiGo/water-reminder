@@ -1,8 +1,8 @@
 # What is modified:
-1) I make it rub in raspberry pi 4
+1) I make it run in raspberry pi 4
 2) Raspberry pi send the drink remind in my linux pc
 3) The pc send notification when the data receive [use this https://github.com/UnbiGo/NotifyByCurl]
-
+4) make alarm in time ranges
 
 # Water Reminder
 
