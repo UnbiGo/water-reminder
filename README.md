@@ -1,7 +1,7 @@
 # What is modified:
-1) i make it rub in raspberry pi 4
-2) raspberry pi send the drink remind in my linux pc
-3) the pc send notification when the data receive [use this https://github.com/UnbiGo/NotifyByCurl]
+1) I make it rub in raspberry pi 4
+2) Raspberry pi send the drink remind in my linux pc
+3) The pc send notification when the data receive [use this https://github.com/UnbiGo/NotifyByCurl]
 
 
 # Water Reminder
