@@ -38,9 +38,9 @@ func main() {
 	configMintime := filepath.Join(configDirPath, "min")
 	configAddr := filepath.Join(configDirPath, "addr")
 
-	if connected() {
-		checkVersion(version, configIconPath)
-	}
+// 	if connected() {
+// 		checkVersion(version, configIconPath)
+// 	}
 
 	if !findConfig(configPath) {
 
