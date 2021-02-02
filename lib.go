@@ -125,7 +125,7 @@ func notify(config, icon, os string) {
 }
 
 func sendNotif(title, message, icon string) {
-	if !isInTimeRange(MINTIME, MAXTIME) {
+	if !isInTimeRange(timeranges) {
 		fmt.Println("Time not in range")
 		return
 	}
@@ -200,7 +200,13 @@ func stringToTime(str string) time.Time {
 	return tm
 }
 
-func isInTimeRange(startTimeString, endTimeString string) bool {
+///////////////////Type time range/////////////////
+type TimeRange struct {
+	StartTime string `json:"start"`
+	EndTime   string `json:"end"`
+}
+
+func (timerange TimeRange) isInTimeRange() bool {
 	t := time.Now()
 
 	zone, offset := t.Zone()
@@ -213,9 +219,9 @@ func isInTimeRange(startTimeString, endTimeString string) bool {
 
 	timeNow := stringToTime(timeNowString)
 
-	start := stringToTime(startTimeString)
+	start := stringToTime(timerange.StartTime)
 
-	end := stringToTime(endTimeString)
+	end := stringToTime(timerange.EndTime)
 
 	fmt.Println("Local Time Now: ", timeNow)
 
@@ -227,5 +233,27 @@ func isInTimeRange(startTimeString, endTimeString string) bool {
 		return true
 	}
 
+	return false
+}
+
+////////////////////Loop time range checker/////////////
+
+func parseTimearray(timearray_str string) []TimeRange {
+	var jsonBlob = []byte(timearray_str)
+	var timerange_array []TimeRange
+	err := json.Unmarshal(jsonBlob, &timerange_array)
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+	return timerange_array
+}
+
+func isInTimeRange(timerange_array []TimeRange) bool {
+	for _, ele := range timerange_array {
+		if ele.isInTimeRange() {
+			return true
+		}
+	}
 	return false
 }

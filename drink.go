@@ -18,6 +18,7 @@ var version string = "2.3.1"
 var MAXTIME = "11:00PM"
 var MINTIME = "06:00AM"
 var ADDR = "http://127.0.0.1:8001/notify"
+var timeranges []TimeRange
 
 func main() {
 
@@ -34,13 +35,12 @@ func main() {
 	configDirPath := filepath.Join(configPath, "water-reminder")
 	configFilePath := filepath.Join(configDirPath, "config.txt")
 	configIconPath := filepath.Join(configDirPath, "water-glass.png")
-	configMaxtime := filepath.Join(configDirPath, "max")
-	configMintime := filepath.Join(configDirPath, "min")
+	configTimeRange := filepath.Join(configDirPath, "timerange")
 	configAddr := filepath.Join(configDirPath, "addr")
 
-// 	if connected() {
-// 		checkVersion(version, configIconPath)
-// 	}
+	// 	if connected() {
+	// 		checkVersion(version, configIconPath)
+	// 	}
 
 	if !findConfig(configPath) {
 
@@ -55,12 +55,10 @@ func main() {
 		//Download icon and default config file in the new directory
 		downloadFile("https://raw.githubusercontent.com/0xfederama/water-reminder/master/resources/config.txt", configFilePath)
 		downloadFile("https://raw.githubusercontent.com/0xfederama/water-reminder/master/resources/water-glass.png", configIconPath)
-		write(configMaxtime, MAXTIME)
-		write(configMintime, MINTIME)
+		write(configTimeRange, "[{\"start\":\"01:00AM\",\"end\":\"04:00AM\"},{\"start\":\"06:00AM\",\"end\":\"08:00AM\"},{\"start\":\"10:00AM\",\"end\":\"11:00PM\"}]")
 		write(configAddr, ADDR)
 	}
-	MAXTIME = readText(configMaxtime)
-	MINTIME = readText(configMintime)
+	timeranges = parseTimearray(readText(configTimeRange))
 	ADDR = readText(configAddr)
 	go notify(configFilePath, configIconPath, OS)
 
